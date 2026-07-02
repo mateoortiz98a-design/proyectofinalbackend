@@ -6,24 +6,21 @@ const privateChatSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-
     fk_user_id2: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
-
     fecha_creacion: {
         type: Date,
         default: Date.now
-    }
+    },
+    deleted_by: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }]
 });
 
 export const PRIVATECHAT_MODEL_NAME = "PrivateChat";
-
-const PrivateChat = mongoose.model(
-    PRIVATECHAT_MODEL_NAME,
-    privateChatSchema
-);
-
+const PrivateChat = mongoose.model(PRIVATECHAT_MODEL_NAME, privateChatSchema);
 export default PrivateChat;

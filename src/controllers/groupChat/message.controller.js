@@ -1,106 +1,67 @@
 import messageService from "../../services/groupChat/message.service.js";
-
+import { getIO } from "../../config/socket.config.js"; //import     getIO from "../../config/socket.config.js";
+            
 class MessageController {
 
     async getAll(req, res, next) {
         try {
             const { chat_id } = req.params;
-
             const messages = await messageService.getMessages(chat_id);
-
-            return res.status(200).json({
-                ok: true,
-                messages
-            });
-
-        } catch (error) {
-            next(error);
-        }
+            return res.status(200).json({ ok: true, messages });
+        } catch (error) { next(error) }
     }
 
     async getById(req, res, next) {
         try {
             const { message_id } = req.params;
-
             const message = await messageService.getMessageById(message_id);
-
-            return res.status(200).json({
-                ok: true,
-                message
-            });
-
-        } catch (error) {
-            next(error);
-        }
+            return res.status(200).json({ ok: true, message });
+        } catch (error) { next(error) }
     }
 
-    async create(req, res, next) {
-        try {
-            const { chat_id } = req.params;
-            const { mensaje } = req.body;
+ async create(req, res, next) {
+    try {
+        const { chat_id } = req.params;
+        const { mensaje } = req.body;
+        const user_id = req.user.id;
 
-            const user_id = req.user.id;
+        const newMessage = await messageService.createMessage(chat_id, user_id, mensaje);
+        
+        // Populate antes de emitir por socket
+        await newMessage.populate('fk_sender_user_id', 'name email')
+        
+        const io = getIO()
+        io.to(`chat:${chat_id}`).emit('new_message', newMessage)
 
-            const newMessage = await messageService.createMessage(
-                chat_id,
-                user_id,
-                mensaje
-            );
-
-            return res.status(201).json({
-                ok: true,
-                message: "Mensaje enviado correctamente.",
-                data: newMessage
-            });
-
-        } catch (error) {
-            next(error);
-        }
-    }
+        return res.status(201).json({ ok: true, message: "Mensaje enviado.", data: newMessage });
+    } catch (error) { next(error) }
+}
 
     async update(req, res, next) {
         try {
             const { message_id } = req.params;
-
             const user_id = req.user.id;
+            const updatedMessage = await messageService.updateMessage(message_id, user_id, req.body);
 
-            const updatedMessage =
-                await messageService.updateMessage(
-                    message_id,
-                    user_id,
-                    req.body
-                );
+            // Emitir a todos en el chat
+            getIO().to(`chat:${updatedMessage.fk_chat_id}`).emit('updated_message', updatedMessage)
 
-            return res.status(200).json({
-                ok: true,
-                message: "Mensaje actualizado correctamente.",
-                data: updatedMessage
-            });
-
-        } catch (error) {
-            next(error);
-        }
+            return res.status(200).json({ ok: true, message: "Mensaje actualizado.", data: updatedMessage });
+        } catch (error) { next(error) }
     }
 
     async delete(req, res, next) {
         try {
             const { message_id } = req.params;
-
             const user_id = req.user.id;
 
-            await messageService.deleteMessage(
-                message_id,
-                user_id
-            );
+            const deletedMessage = await messageService.deleteMessage(message_id, user_id);
 
-            return res.status(200).json({
-                ok: true,
-                message: "Mensaje eliminado correctamente."
-            });
+            // Emitir a todos en el chat
+            getIO().to(`chat:${deletedMessage.fk_chat_id}`).emit('deleted_message', { message_id })
 
-        } catch (error) {
-            next(error);
-        }
+            return res.status(200).json({ ok: true, message: "Mensaje eliminado." });
+        } catch (error) { next(error) }
     }
 }
 

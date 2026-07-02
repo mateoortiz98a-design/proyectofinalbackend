@@ -12,14 +12,8 @@ class PrivateChatRepository {
     async getChatBetweenUsers(user_id, user_id2) {
         return await privateChatModel.findOne({
             $or: [
-                {
-                    fk_user_id: user_id,
-                    fk_user_id2: user_id2
-                },
-                {
-                    fk_user_id: user_id2,
-                    fk_user_id2: user_id
-                }
+                { fk_user_id: user_id, fk_user_id2: user_id2 },
+                { fk_user_id: user_id2, fk_user_id2: user_id }
             ]
         });
     }
@@ -30,7 +24,8 @@ class PrivateChatRepository {
                 $or: [
                     { fk_user_id: user_id },
                     { fk_user_id2: user_id }
-                ]
+                ],
+                deleted_by: { $ne: user_id }
             })
             .populate("fk_user_id", "name email")
             .populate("fk_user_id2", "name email")
@@ -48,6 +43,17 @@ class PrivateChatRepository {
         return await privateChatModel.findByIdAndDelete(chat_id);
     }
 
+    async markDeletedByUser(user_id) {
+        return await privateChatModel.updateMany(
+            {
+                $or: [
+                    { fk_user_id: user_id },
+                    { fk_user_id2: user_id }
+                ]
+            },
+            { $addToSet: { deleted_by: user_id } }
+        )
+    }
 }
 
 const privateChatRepository = new PrivateChatRepository();

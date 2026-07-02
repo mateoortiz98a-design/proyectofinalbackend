@@ -44,6 +44,15 @@ class ContactRepository {
     async deleteById(contact_id) {
         return await Contact.findByIdAndDelete(contact_id)
     }
+
+    async deleteAllByUser(user_id) {
+        return await Contact.deleteMany({
+            $or: [
+                { fk_sender_id: user_id },
+                { fk_receiver_id: user_id }
+            ]
+        })
+    }
 }
 
 const contactRepository = new ContactRepository()

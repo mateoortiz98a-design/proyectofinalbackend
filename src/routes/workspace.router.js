@@ -51,9 +51,8 @@ workspaceRouter.put(
 )
 workspaceRouter.get(
     '/:workspace_id/members',
-    workspaceMiddleware([MEMBER_WORKSPACE_ROLES.OWNER, MEMBER_WORKSPACE_ROLES.ADMIN]),
+    workspaceMiddleware([MEMBER_WORKSPACE_ROLES.OWNER, MEMBER_WORKSPACE_ROLES.ADMIN, MEMBER_WORKSPACE_ROLES.USER]),
     memberWorkspaceController.getMembers
 )
-
 
 export default workspaceRouter;
