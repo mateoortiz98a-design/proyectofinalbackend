@@ -29,15 +29,15 @@ const httpServer = createServer(app);
 const PORT = ENVIRONMENT.PORT;
 
 // Inicializar Socket.io
-initSocket(httpServer)
+const io = initSocket(httpServer);
 
 app.use(cors({
-  origin: [
-    'http://localhost:5173',                         // Tu compu (Local)
-    'https://proyectofinalfrontend-eight.vercel.app' // Tu producción (Vercel)
-  ],
-  credentials: true
-}));
+    origin: [
+        'http://localhost:5173',
+        'https://proyectofinalfrontend-eight.vercel.app'
+    ],
+    credentials: true
+}))
 
 app.use(express.json());
 
