@@ -5,7 +5,7 @@ let io
 export function initSocket(httpServer) {
     
    // Cambia la configuración del Server de socket.io por esta:
-import { Server } from 'socket.io';
+
 
 // La función debe recibir 'server' para poder usarlo adentro
 export const initSocket = (server) => {
