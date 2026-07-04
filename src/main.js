@@ -31,7 +31,9 @@ const PORT = ENVIRONMENT.PORT;
 // Inicializar Socket.io
 initSocket(httpServer)
 
-app.use(cors())
+app.use(cors({
+    origin: process.env.URL_FRONTEND || '*'
+}))
 app.use(express.json());
 
 app.get('/api/workspace/:workspace_id/invite/:decision', memberWorkspaceController.processInvitation)

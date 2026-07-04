@@ -4,10 +4,10 @@ let io
 
 export function initSocket(httpServer) {
     io = new Server(httpServer, {
-        cors: {
-            origin: '*',
-            methods: ['GET', 'POST', 'PUT', 'DELETE']
-        }
+      cors: {
+    origin: process.env.URL_FRONTEND || '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+}
     })
 
     io.on('connection', (socket) => {
