@@ -18,6 +18,8 @@ import memberWorkspaceController from "./controllers/memberWorkspace.controller.
 import errorHandlerMiddleware from "./middlewares/error.middleware.js";
 import { initSocket } from './config/socket.config.js';
 
+dns.setDefaultResultOrder('ipv4first'); 
+
 if (ENVIRONMENT.MODE === 'development') {
     dns.setServers(['8.8.8.8', '8.8.4.4']);
 }
