@@ -3,12 +3,18 @@ import { Server } from 'socket.io'
 let io
 
 export function initSocket(httpServer) {
-    io = new Server(httpServer, {
-      cors: {
-    origin: process.env.URL_FRONTEND || '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
-}
-    })
+    
+   // Cambia la configuración del Server de socket.io por esta:
+const io = new Server(server, {
+  cors: {
+    origin: [
+      'http://localhost:5173',
+      'https://proyectofinalfrontend-eight.vercel.app'
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
 
     io.on('connection', (socket) => {
         console.log('Usuario conectado:', socket.id)

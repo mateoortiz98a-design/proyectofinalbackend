@@ -32,8 +32,13 @@ const PORT = ENVIRONMENT.PORT;
 initSocket(httpServer)
 
 app.use(cors({
-    origin: process.env.URL_FRONTEND || '*'
-}))
+  origin: [
+    'http://localhost:5173',                         // Tu compu (Local)
+    'https://proyectofinalfrontend-eight.vercel.app' // Tu producción (Vercel)
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.get('/api/workspace/:workspace_id/invite/:decision', memberWorkspaceController.processInvitation)
