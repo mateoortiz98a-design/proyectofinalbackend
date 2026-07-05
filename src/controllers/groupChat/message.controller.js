@@ -1,6 +1,6 @@
 import messageService from "../../services/groupChat/message.service.js";
-import { getIO } from "../../config/socket.config.js"; //import     getIO from "../../config/socket.config.js";
-            
+import { getIO } from "../../config/socket.config.js";
+
 class MessageController {
 
     async getAll(req, res, next) {
@@ -19,23 +19,21 @@ class MessageController {
         } catch (error) { next(error) }
     }
 
- async create(req, res, next) {
-    try {
-        const { chat_id } = req.params;
-        const { mensaje } = req.body;
-        const user_id = req.user.id;
+    async create(req, res, next) {
+        try {
+            const { chat_id } = req.params;
+            const { mensaje } = req.body;
+            const user_id = req.user.id;
 
-        const newMessage = await messageService.createMessage(chat_id, user_id, mensaje);
-        
-        // Populate antes de emitir por socket
-        await newMessage.populate('fk_sender_user_id', 'name email')
-        
-        const io = getIO()
-        io.to(`chat:${chat_id}`).emit('new_message', newMessage)
+            const newMessage = await messageService.createMessage(chat_id, user_id, mensaje);
+            await newMessage.populate('fk_sender_user_id', 'name email')
 
-        return res.status(201).json({ ok: true, message: "Mensaje enviado.", data: newMessage });
-    } catch (error) { next(error) }
-}
+            const io = getIO()
+            io.to(`chat:${chat_id}`).emit('new_message', newMessage)
+
+            return res.status(201).json({ ok: true, message: "Mensaje enviado.", data: newMessage });
+        } catch (error) { next(error) }
+    }
 
     async update(req, res, next) {
         try {
@@ -43,7 +41,6 @@ class MessageController {
             const user_id = req.user.id;
             const updatedMessage = await messageService.updateMessage(message_id, user_id, req.body);
 
-            // Emitir a todos en el chat
             getIO().to(`chat:${updatedMessage.fk_chat_id}`).emit('updated_message', updatedMessage)
 
             return res.status(200).json({ ok: true, message: "Mensaje actualizado.", data: updatedMessage });
@@ -57,7 +54,6 @@ class MessageController {
 
             const deletedMessage = await messageService.deleteMessage(message_id, user_id);
 
-            // Emitir a todos en el chat
             getIO().to(`chat:${deletedMessage.fk_chat_id}`).emit('deleted_message', { message_id })
 
             return res.status(200).json({ ok: true, message: "Mensaje eliminado." });
