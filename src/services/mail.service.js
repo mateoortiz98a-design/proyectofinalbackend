@@ -1,53 +1,109 @@
-import transporter from "../config/mailer.config.js";
 import ENVIRONMENT from "../config/environment.config.js";
 
 class MailService {
-    async _sendMail(to, subject, html) {
-        await transporter.sendMail({
-            from: `"MiSlack" <${ENVIRONMENT.EMAIL_USER}>`,
-            to,
-            subject,
-            html
-        });
+    async _sendViaHttp(toEmail, subject, htmlContent) {
+        try {
+            const credentials = Buffer.from(
+                `${ENVIRONMENT.MAILJET_API_KEY}:${ENVIRONMENT.MAILJET_SECRET_KEY}`
+            ).toString("base64");
+
+            const response = await fetch(
+                "https://api.mailjet.com/v3.1/send",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Basic ${credentials}`,
+                    },
+                    body: JSON.stringify({
+                        Messages: [
+                            {
+                                From: {
+                                    Email: ENVIRONMENT.EMAIL_USER,
+                                    Name: "MiSlack",
+                                },
+                                To: [
+                                    {
+                                        Email: toEmail,
+                                    },
+                                ],
+                                Subject: subject,
+                                HTMLPart: htmlContent,
+                            },
+                        ],
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(data);
+                throw new Error("Error enviando correo con Mailjet");
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Mailjet:", error);
+            throw error;
+        }
     }
 
     async sendVerificationEmail(email, verification_url) {
         const html = `
-            <div style="font-family:Arial;padding:20px;text-align:center">
+            <div style="font-family:Arial;padding:20px;text-align:center;">
                 <h2>Bienvenido a MiSlack</h2>
                 <p>Hacé click para verificar tu cuenta.</p>
-                <a href="${verification_url}">Verificar cuenta</a>
+
+                <a
+                    href="${verification_url}"
+                    style="background:#3f0e40;color:white;padding:12px 20px;text-decoration:none;border-radius:5px;"
+                >
+                    Verificar cuenta
+                </a>
             </div>
         `;
 
-        await this._sendMail(email, "Verificá tu mail", html);
+        return this._sendViaHttp(email, "Verificá tu cuenta", html);
     }
 
     async sendResetPasswordEmail(email, reset_url) {
         const html = `
-            <div style="font-family:Arial;padding:20px;text-align:center">
+            <div style="font-family:Arial;padding:20px;text-align:center;">
                 <h2>Restablecer contraseña</h2>
-                <a href="${reset_url}">Restablecer contraseña</a>
+
+                <a
+                    href="${reset_url}"
+                    style="background:#3f0e40;color:white;padding:12px 20px;text-decoration:none;border-radius:5px;"
+                >
+                    Restablecer contraseña
+                </a>
             </div>
         `;
 
-        await this._sendMail(email, "Restablecé tu contraseña", html);
+        return this._sendViaHttp(email, "Restablecer contraseña", html);
     }
 
     async sendInvitationMemberEmail(email, accept_url, reject_url, role) {
         const html = `
-            <div style="font-family:Arial;padding:20px;text-align:center">
+            <div style="font-family:Arial;padding:20px;text-align:center;">
                 <h2>Invitación</h2>
 
-                <p>Rol: <b>${role}</b></p>
+                <p>Has sido invitado como <b>${role}</b>.</p>
 
                 <a href="${accept_url}">Aceptar</a>
+
                 <br><br>
+
                 <a href="${reject_url}">Rechazar</a>
             </div>
         `;
 
-        await this._sendMail(email, "Invitación", html);
+        return this._sendViaHttp(
+            email,
+            "Invitación a Workspace",
+            html
+        );
     }
 }
 
