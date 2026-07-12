@@ -35,13 +35,17 @@ class MailService {
                 }
             );
 
-            const data = await response.json();
+           const data = await response.json();
 
-            if (!response.ok) {
-                console.error(data);
-                throw new Error("Error enviando correo con Mailjet");
-            }
+console.log(
+    JSON.stringify(data.Messages[0].Errors, null, 2)
+);
 
+if (!response.ok) {
+    throw new Error(
+        JSON.stringify(data.Messages[0].Errors, null, 2)
+    );
+}
             return data;
         } catch (error) {
             console.error("Mailjet:", error);
