@@ -1,15 +1,24 @@
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 import ENVIRONMENT from "../config/environment.config.js";
 import ServerError from "../helpers/serverError.helper.js";
 
-const resend = new Resend(ENVIRONMENT.RESEND_API_KEY)
+// Configuración del transporte de Nodemailer conectado a Brevo
+const transporter = nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false, // TLS utiliza false para el puerto 587
+    auth: {
+        user: ENVIRONMENT.EMAIL_USER,     // Tu correo de registro en Brevo
+        pass: ENVIRONMENT.BREVO_SMTP_KEY  // Tu clave maestra SMTP de Brevo
+    },
+});
 
 class MailService {
 
     async sendVerificationEmail(email, verification_url) {
         try {
-            await resend.emails.send({
-                from: 'MiSlack <onboarding@resend.dev>',
+            await transporter.sendMail({
+                from: `"MiSlack" <${ENVIRONMENT.EMAIL_USER}>`,
                 to: email,
                 subject: 'Verifica tu mail',
                 html: `
@@ -21,17 +30,17 @@ class MailService {
                     </div>
                 `
             })
-            console.log("Mail de verificación enviado a:", email)
+            console.log("Mail de verificación enviado con Brevo a:", email)
         } catch (error) {
-            console.error("Error al enviar verificación:", error)
+            console.error("Error al enviar verificación con Brevo:", error)
             throw error
         }
     }
 
     async sendResetPasswordEmail(email, reset_url) {
         try {
-            await resend.emails.send({
-                from: 'MiSlack <onboarding@resend.dev>',
+            await transporter.sendMail({
+                from: `"MiSlack" <${ENVIRONMENT.EMAIL_USER}>`,
                 to: email,
                 subject: 'Restablecé tu contraseña',
                 html: `
@@ -43,17 +52,17 @@ class MailService {
                     </div>
                 `
             })
-            console.log("Mail de reset enviado a:", email)
+            console.log("Mail de reset enviado con Brevo a:", email)
         } catch (error) {
-            console.error("Error al enviar reset:", error)
+            console.error("Error al enviar reset con Brevo:", error)
             throw error
         }
     }
 
     async sendInvitationMemberEmail(invited_email, accept_url, reject_url, role) {
         try {
-            await resend.emails.send({
-                from: 'MiSlack <onboarding@resend.dev>',
+            await transporter.sendMail({
+                from: `"MiSlack" <${ENVIRONMENT.EMAIL_USER}>`,
                 to: invited_email,
                 subject: 'Invitación a Espacio de Trabajo',
                 html: `
@@ -68,9 +77,9 @@ class MailService {
                     </div>
                 `
             })
-            console.log("Mail de invitación enviado a:", invited_email)
+            console.log("Mail de invitación enviado con Brevo a:", invited_email)
         } catch (error) {
-            console.error("Error al enviar invitación:", error)
+            console.error("Error al enviar invitación con Brevo:", error)
             throw error
         }
     }
