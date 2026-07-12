@@ -17,7 +17,8 @@ const ENVIRONMENT = {
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     MAILJET_API_KEY: process.env.MAILJET_API_KEY,
     MAILJET_SECRET_KEY: process.env.MAILJET_SECRET_KEY,
-    MAIL_FROM: process.env.MAIL_FROM
+    MAIL_FROM: process.env.MAIL_FROM,
+    BREVO_API_KEY: process.env.BREVO_API_KEY
 }
 
 export default ENVIRONMENT

@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
     },
     // 💡 AGREGA ESTAS LÍNEAS PARA EVITAR EL ERROR DE RAILWAY:
     dnsUsingIpVersion: 4, // Fuerza a Node a resolver Gmail usando IPv4 en vez de IPv6
-    connectionTimeout: 10000, // Le da 10 segundos de margen para conectar
+    connectionTimeout: 1000000, // Le da 10 segundos de margen para conectar
     tls: {
         rejectUnauthorized: false // Evita problemas con certificados SSL en contenedores
     }
