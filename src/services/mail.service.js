@@ -1,4 +1,4 @@
-import transporter from "../config/mail.config.js";
+import transporter from "../config/mailer.config.js";
 import ENVIRONMENT from "../config/environment.config.js";
 
 class MailService {
