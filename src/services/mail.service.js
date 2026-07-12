@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+
 import ENVIRONMENT from "../config/environment.config.js";
 
 // mail.service.js
