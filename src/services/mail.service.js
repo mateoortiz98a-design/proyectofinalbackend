@@ -19,7 +19,7 @@ class MailService {
                         Messages: [
                             {
                                 From: {
-                                    Email: ENVIRONMENT.EMAIL_USER,
+                                    Email: ENVIRONMENT.MAIL_FROM,
                                     Name: "MiSlack",
                                 },
                                 To: [
