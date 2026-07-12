@@ -1,13 +1,13 @@
 import nodemailer from "nodemailer";
-import ENVIRONMENT from "./environment.config.js"; // Tu archivo de entorno actual
+import ENVIRONMENT from "./environment.config.js";
 
 const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
+  host: "in-v3.mailjet.com",
   port: 587,
-  secure: false, // TLS utiliza false para el puerto 587
+  secure: false,
   auth: {
-    user: ENVIRONMENT.EMAIL_USER,      // El correo de tu cuenta de Brevo
-    pass: ENVIRONMENT.BREVO_SMTP_KEY,  // La clave SMTP que generaste
+    user: ENVIRONMENT.MAILJET_API_KEY,
+    pass: ENVIRONMENT.MAILJET_SECRET_KEY,
   },
 });
 

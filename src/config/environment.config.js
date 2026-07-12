@@ -15,8 +15,9 @@ const ENVIRONMENT = {
     JWT_SECRET: process.env.JWT_SECRET,
     URL_FRONTEND: process.env.URL_FRONTEND,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
-    EMAIL_USER: process.env.EMAIL_USER,
-    BREVO_SMTP_KEY: process.env.BREVO_SMTP_KEY
+    MAILJET_API_KEY: process.env.MAILJET_API_KEY,
+    MAILJET_SECRET_KEY: process.env.MAILJET_SECRET_KEY,
+    MAIL_FROM: process.env.MAIL_FROM
 }
 
 export default ENVIRONMENT
