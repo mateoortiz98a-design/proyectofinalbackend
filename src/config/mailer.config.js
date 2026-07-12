@@ -2,12 +2,10 @@ import nodemailer from "nodemailer";
 import ENVIRONMENT from "./environment.config.js";
 
 const transporter = nodemailer.createTransport({
-  host: "in-v3.mailjet.com",
-  port: 587,
-  secure: false,
+  service: "gmail",
   auth: {
-    user: ENVIRONMENT.MAILJET_API_KEY,
-    pass: ENVIRONMENT.MAILJET_SECRET_KEY,
+    user: ENVIRONMENT.GMAIL_USERNAME,       // Tu correo de Gmail (ej: tu_usuario@gmail.com)
+    pass: ENVIRONMENT.GMAIL_PASSWORD,   // La contraseña de 16 letras que te da Google
   },
 });
 
