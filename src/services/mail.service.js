@@ -1,75 +1,45 @@
-import nodemailer from 'nodemailer';
-import ENVIRONMENT from "../config/environment.config.js";
+// Asegurate de pasarle tu API Key por variable de entorno o pegarla acá para probar
+const BREVO_API_KEY = process.env.BREVO_API_KEY || "TU_API_KEY_DE_BREVO_AQUÍ"; 
 
-// Configuración del transporte nativo para Gmail
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: ENVIRONMENT.GMAIL_USERNAME,     // Tu cuenta de Gmail
-    pass: ENVIRONMENT.GMAIL_PASSWORD  // Tu contraseña de aplicación de 16 letras
-  }
-});
+export const sendVerificationEmail = async (emailDestino, token) => {
+    const verification_url = `https://proyectofinalfrontend-eight.vercel.app/verify?token=${token}`;
 
-class MailService {
-    async sendVerificationEmail(email, verification_url) {
-        try {
-            await transporter.sendMail({
-                from: `"MiSlack" <${ENVIRONMENT.GMAIL_USERNAME}>`, // ¡El remitente es tu cuenta de Gmail!
-                to: email, // ¡Llegará al instante a CUALQUIER Gmail real de tus profes o compañeros!
-                subject: 'Verifica tu mail',
-                html: `
+    try {
+        const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+            method: "POST",
+            headers: {
+                "accept": "application/json",
+                "api-key": BREVO_API_KEY,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({
+                // 🔥 IMPORTANTE: El email del sender tiene que ser el tuyo verificado
+                sender: { name: "MiSlack", email: "mateoortiz98a@gmail.com" }, 
+                to: [{ email: emailDestino }],
+                subject: "Verificá tu cuenta de MiSlack",
+                htmlContent: `
                     <div style="font-family: Arial; padding: 20px; text-align: center;">
-                        <h2>Bienvenido a MiSlack</h2>
-                        <p>Hacé click en el siguiente link para verificar tu cuenta:</p>
-                        <a href="${verification_url}" style="background-color: #3f0e40; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Verificar cuenta</a>
-                        <p style="font-size: 12px; color: gray;">Si no te registraste, ignorá este mensaje.</p>
+                        <h2>¡Bienvenido a MiSlack!</h2>
+                        <p>Hacé clic en el siguiente enlace para activar tu cuenta:</p>
+                        <a href="${verification_url}" style="background-color: #3f0e40; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                            Verificar Cuenta
+                        </a>
                     </div>
                 `
-            });
-            console.log("Mail de verificación real enviado a:", email);
-        } catch (error) {
-            console.error("Error enviando con Gmail de Google:", error);
-            throw error;
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(`Error en la API de Brevo: ${JSON.stringify(data)}`);
         }
-    }
 
-    async sendResetPasswordEmail(email, reset_url) {
-        try {
-            await transporter.sendMail({
-                from: `"MiSlack" <${ENVIRONMENT.GMAIL_USERNAME}>`,
-                to: email,
-                subject: 'Restablecé tu contraseña',
-                html: `
-                    <div style="font-family: Arial; padding: 20px; text-align: center;">
-                        <h2>Restablecer contraseña</h2>
-                        <p>Hacé click en el siguiente link para cambiar tu contraseña:</p>
-                        <a href="${reset_url}" style="background-color: #3f0e40; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Restablecer contraseña</a>
-                    </div>
-                `
-            });
-        } catch (error) { throw error; }
-    }
+        console.log("¡Mail enviado con éxito mediante la API de Brevo!", data.messageId);
+        return data;
 
-    async sendInvitationMemberEmail(invited_email, accept_url, reject_url, role) {
-        try {
-            await transporter.sendMail({
-                from: `"MiSlack" <${ENVIRONMENT.GMAIL_USERNAME}>`,
-                to: invited_email,
-                subject: 'Invitación a Espacio de Trabajo',
-                html: `
-                    <div style="font-family: Arial; padding: 20px; text-align: center;">
-                        <h2>¡Has sido invitado!</h2>
-                        <p>Te invitaron con el rol de <b>${role}</b>.</p>
-                        <div style="margin: 30px 0;">
-                            <a href="${accept_url}" style="background-color: #28a745; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">ACEPTAR</a>
-                            <a href="${reject_url}" style="background-color: #dc3545; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">RECHAZAR</a>
-                        </div>
-                    </div>
-                `
-            });
-        } catch (error) { throw error; }
+    } catch (error) {
+        console.error("Error crítico enviando el correo por HTTP:", error);
+        throw error;
     }
-}
-
-const mailService = new MailService();
-export default mailService;
+};
