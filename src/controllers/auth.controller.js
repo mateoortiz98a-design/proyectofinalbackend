@@ -26,13 +26,14 @@ class AuthController {
 
         try {
             // Intentamos enviar el mail transaccional real usando Mailjet
-            // Le pasamos solo el token como espera tu mail.service.js
             await mailService.sendVerificationEmail(email, verification_token)
 
+            // 🚀 Modificado: Mandamos el debugLink siempre para poder saltearnos la espera de Gmail
             return res.status(201).json({
                 message: "Usuario registrado con éxito",
                 ok: true,
                 status: 201,
+                debugLink: debugLink, // 👈 Sumamos esto acá también temporalmente
                 data: {
                     user: {
                         id: newUser._id,
@@ -42,15 +43,13 @@ class AuthController {
                 }
             });
         } catch (mailError) {
-            // 🔥 CAPTURA DE EMERGENCIA: Si Mailjet falla (o está la cuenta en revisión), 
-            // no rompemos el flujo. Respondemos 201 mandando el debugLink para que React pinte el cartel amarillo.
             console.error("[AuthRegister] Error al enviar el correo real, activando link de rescate:", mailError.message);
             
             return res.status(201).json({
                 message: "Usuario registrado con éxito (Modo Demo)",
                 ok: true,
                 status: 201,
-                debugLink: debugLink, // 👈 Esto es lo que va a activar tu cartel amarillo en React
+                debugLink: debugLink, 
                 data: {
                     user: {
                         id: newUser._id,
