@@ -3,14 +3,17 @@ import ENVIRONMENT from "../config/environment.config.js";
 import ServerError from "../helpers/serverError.helper.js";
 
 // Configuración del transporte de Nodemailer conectado a Brevo
+// Configuración del transporte por el puerto seguro 465 (Recomendado para Render)
 const transporter = nodemailer.createTransport({
     host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false, // TLS utiliza false para el puerto 587
+    port: 465,         // Cambiamos de 587 a 465
+    secure: true,      // Cambiamos a true porque el puerto 465 usa SSL nativo
     auth: {
-        user: ENVIRONMENT.EMAIL_USER,     // Tu correo de registro en Brevo
-        pass: ENVIRONMENT.BREVO_SMTP_KEY  // Tu clave maestra SMTP de Brevo
+        user: ENVIRONMENT.EMAIL_USER,     
+        pass: ENVIRONMENT.BREVO_SMTP_KEY  
     },
+    connectionTimeout: 10000, // 10 segundos de límite para conectar
+    greetingTimeout: 10000,   // 10 segundos de límite para el saludo SMTP
 });
 
 class MailService {
