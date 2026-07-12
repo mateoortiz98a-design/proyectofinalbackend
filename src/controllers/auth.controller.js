@@ -20,22 +20,46 @@ class AuthController {
         const newUser = await userRepository.create(name, email, hashed_password);
 
         const verification_token = jwt.sign({ email }, ENVIRONMENT.JWT_SECRET)
-        const verification_url = `${ENVIRONMENT.URL_BACKEND}/api/auth/verify-email?verification_token=${verification_token}`
+        
+        // 🚀 Construimos el link de emergencia apuntando a tu Frontend de Vercel
+        const debugLink = `https://proyectofinalfrontend-eight.vercel.app/verify?token=${verification_token}`
 
-        await mailService.sendVerificationEmail(email, verification_url)
+        try {
+            // Intentamos enviar el mail transaccional real usando Mailjet
+            // Le pasamos solo el token como espera tu mail.service.js
+            await mailService.sendVerificationEmail(email, verification_token)
 
-        return res.status(201).json({
-            message: "Usuario registrado con éxito",
-            ok: true,
-            status: 201,
-            data: {
-                user: {
-                    id: newUser._id,
-                    name: newUser.name,
-                    email: newUser.email
+            return res.status(201).json({
+                message: "Usuario registrado con éxito",
+                ok: true,
+                status: 201,
+                data: {
+                    user: {
+                        id: newUser._id,
+                        name: newUser.name,
+                        email: newUser.email
+                    }
                 }
-            }
-        });
+            });
+        } catch (mailError) {
+            // 🔥 CAPTURA DE EMERGENCIA: Si Mailjet falla (o está la cuenta en revisión), 
+            // no rompemos el flujo. Respondemos 201 mandando el debugLink para que React pinte el cartel amarillo.
+            console.error("[AuthRegister] Error al enviar el correo real, activando link de rescate:", mailError.message);
+            
+            return res.status(201).json({
+                message: "Usuario registrado con éxito (Modo Demo)",
+                ok: true,
+                status: 201,
+                debugLink: debugLink, // 👈 Esto es lo que va a activar tu cartel amarillo en React
+                data: {
+                    user: {
+                        id: newUser._id,
+                        name: newUser.name,
+                        email: newUser.email
+                    }
+                }
+            });
+        }
     }
 
     async verifyEmail(req, res) {
