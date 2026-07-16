@@ -79,6 +79,32 @@ class MemberWorkspaceService {
         }
     }
 
+    // invitaciones pendientes del usuario logueado, para cargarlas
+    // al iniciar sesión sin importar si estaba online cuando se las mandaron.
+    async getPendingInvitations(user_id) {
+
+        const pendientes = await workspaceMemberRepository.getPendingByUserId(user_id)
+
+        return pendientes.map((membership) => {
+
+            // El invitation_token no se persiste en la base (es solo un JWT del member_id),
+            // así que lo regeneramos acá con la misma firma que en inviteUser().
+            const invitation_token = jwt.sign(
+                { member_id: membership._id },
+                ENVIRONMENT.JWT_SECRET,
+                { expiresIn: `${WORKSPACE_CONFIG.INVITATION_MEMBERSHIP_EXPIRATION_DAYS}d` }
+            );
+
+            return {
+                member_id: membership._id,
+                workspace_id: membership.fk_workspace_id._id,
+                workspace_nombre: membership.fk_workspace_id.nombre,
+                role: membership.rol,
+                invitation_token
+            }
+        })
+    }
+
     async verifyAlreadyMember(workspace_id, user_id) {
         const isInvitedAlreadyMember = await workspaceMemberRepository.getMemberByWorkspaceAndUserId(workspace_id, user_id);
         if (isInvitedAlreadyMember) {

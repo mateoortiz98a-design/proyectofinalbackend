@@ -43,6 +43,26 @@ class PrivateChatRepository {
         return await privateChatModel.findByIdAndDelete(chat_id);
     }
 
+    //  borrado lógico de UN chat puntual, solo para el usuario que lo borra.
+    // La conversación sigue existiendo entera para el otro participante.
+    async markDeletedByUserForChat(chat_id, user_id) {
+        return await privateChatModel.findByIdAndUpdate(
+            chat_id,
+            { $addToSet: { deleted_by: user_id } },
+            { new: true }
+        );
+    }
+
+    // 🔥 NUEVO: si el usuario había borrado el chat de su lado y vuelve a iniciarlo
+    // con el mismo contacto, lo "restauramos" de su lista (sin perder el historial).
+    async unmarkDeletedByUserForChat(chat_id, user_id) {
+        return await privateChatModel.findByIdAndUpdate(
+            chat_id,
+            { $pull: { deleted_by: user_id } },
+            { new: true }
+        );
+    }
+
     async markDeletedByUser(user_id) {
         return await privateChatModel.updateMany(
             {

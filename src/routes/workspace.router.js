@@ -18,6 +18,9 @@ workspaceRouter.post('/', workspaceController.create);
 
 workspaceRouter.get('/', workspaceController.getAllByUser);
 
+//  invitaciones pendientes del usuario logueado (se carga al iniciar sesión)
+workspaceRouter.get('/invitations/pending', memberWorkspaceController.getPendingInvitations);
+
 workspaceRouter.delete(
     '/:workspace_id', 
     workspaceMiddleware([MEMBER_WORKSPACE_ROLES.OWNER]), 

@@ -71,6 +71,17 @@ class WorkspaceMemberRepository {
             }));
     }
 
+    //  invitaciones PENDIENTES de un usuario, sin importar si estaba online
+    // cuando se las mandaron. Se usa para que las vea al iniciar sesión.
+    async getPendingByUserId(user_id) {
+        const memberships = await WorkspaceMember
+            .find({ fk_user_id: user_id, estatus_invitacion: MEMBER_INVITATION_STATUS.PENDING })
+            .populate('fk_workspace_id', 'nombre')
+
+        // Si el workspace fue borrado mientras la invitación seguía pendiente, la descartamos
+        return memberships.filter(membership => membership.fk_workspace_id)
+    }
+
     async getMemberByWorkspaceAndUserId(workspace_id, user_id) {
         return await WorkspaceMember.findOne({
             fk_workspace_id: workspace_id,

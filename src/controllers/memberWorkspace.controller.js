@@ -50,6 +50,25 @@ class MemberWorkspaceController {
 
         
     }
+
+    // lista las invitaciones pendientes del usuario logueado.
+    // Se llama al iniciar sesión para no depender de estar online cuando te invitan.
+    async getPendingInvitations(request, response, next) {
+        try {
+            const { id: user_id } = request.user;
+
+            const invitations = await memberWorkspaceService.getPendingInvitations(user_id);
+
+            return response.status(200).json({
+                ok: true,
+                data: { invitations }
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async removeMember(request, response) {
     const { workspace_id, member_id } = request.params;
 console.log('eliminando member_id:', member_id) 
