@@ -1,5 +1,6 @@
 import ENVIRONMENT from "../config/environment.config.js";
 import MEMBER_INVITATION_STATUS from "../constants/memberInvitationStatus.constant.js";
+import { MEMBER_WORKSPACE_ROLES } from "../constants/memberRoles.constant.js";
 import ServerError from "../helpers/serverError.helper.js";
 import userRepository from "../repositories/user.repository.js";
 import workspaceMemberRepository from "../repositories/workspaceMember.repository.js";
@@ -79,7 +80,7 @@ class MemberWorkspaceService {
         }
     }
 
-    // invitaciones pendientes del usuario logueado, para cargarlas
+    // 🔥 NUEVO: invitaciones pendientes del usuario logueado, para cargarlas
     // al iniciar sesión sin importar si estaba online cuando se las mandaron.
     async getPendingInvitations(user_id) {
 
@@ -103,6 +104,33 @@ class MemberWorkspaceService {
                 invitation_token
             }
         })
+    }
+
+    //  el usuario logueado abandona un workspace del que ya es miembro.
+    // Si es el dueño, transferimos la propiedad al siguiente miembro antes de sacarlo.
+    async leaveWorkspace(workspace_id, user_id) {
+
+        const membership = await workspaceMemberRepository.getMemberByWorkspaceAndUserId(workspace_id, user_id);
+
+        if (!membership || membership.estatus_invitacion !== MEMBER_INVITATION_STATUS.ACCEPTED) {
+            throw new ServerError("No sos miembro de este espacio de trabajo", 404);
+        }
+
+        if (membership.rol === MEMBER_WORKSPACE_ROLES.OWNER) {
+
+            const next_member = await workspaceMemberRepository.getNextMember(workspace_id, user_id);
+
+            if (!next_member) {
+                throw new ServerError(
+                    "Sos el único integrante de este espacio de trabajo. Para salir, eliminá el espacio de trabajo en su lugar.",
+                    400
+                );
+            }
+
+            await workspaceMemberRepository.updateById(next_member._id, { rol: MEMBER_WORKSPACE_ROLES.OWNER });
+        }
+
+        await workspaceMemberRepository.deleteById(membership._id);
     }
 
     async verifyAlreadyMember(workspace_id, user_id) {

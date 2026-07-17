@@ -51,7 +51,7 @@ class MemberWorkspaceController {
         
     }
 
-    // lista las invitaciones pendientes del usuario logueado.
+    // 🔥 NUEVO: lista las invitaciones pendientes del usuario logueado.
     // Se llama al iniciar sesión para no depender de estar online cuando te invitan.
     async getPendingInvitations(request, response, next) {
         try {
@@ -62,6 +62,24 @@ class MemberWorkspaceController {
             return response.status(200).json({
                 ok: true,
                 data: { invitations }
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // el usuario logueado sale de un workspace del que es miembro.
+    async leaveWorkspace(request, response, next) {
+        try {
+            const { workspace_id } = request.params;
+            const { id: user_id } = request.user;
+
+            await memberWorkspaceService.leaveWorkspace(workspace_id, user_id);
+
+            return response.status(200).json({
+                ok: true,
+                message: "Saliste del espacio de trabajo con éxito"
             });
 
         } catch (error) {

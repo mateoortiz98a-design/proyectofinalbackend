@@ -33,6 +33,13 @@ workspaceRouter.put(
     workspaceController.updateById
 )
 
+//  salir del workspace (cualquier miembro que forme parte puede salir del suyo,
+// por eso NO lleva workspaceMiddleware de rol — el service valida la membresía)
+workspaceRouter.delete(
+    '/:workspace_id/leave',
+    memberWorkspaceController.leaveWorkspace
+)
+
 workspaceRouter.post(
     '/:workspace_id/members',
     authMiddleware,
