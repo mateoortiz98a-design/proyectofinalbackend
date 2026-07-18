@@ -76,16 +76,21 @@ class PrivateChatService {
             throw new ServerError("Chat no encontrado.", 404);
         }
 
+        // si el otro participante borró su cuenta, Mongoose popula ese campo
+        // como null (no tira error). Sin el "?." acá, chat.fk_user_id2._id explotaba
+        // con un TypeError apenas alguien intentaba borrar/salir de un chat con una
+        // cuenta eliminada del otro lado, tirando 500. Con optional chaining, si el
+        // campo es null simplemente esa comparación da "false" y sigue de largo.
         const isParticipant =
-            chat.fk_user_id._id.toString() === user_id.toString() ||
-            chat.fk_user_id2._id.toString() === user_id.toString();
+            chat.fk_user_id?._id?.toString() === user_id.toString() ||
+            chat.fk_user_id2?._id?.toString() === user_id.toString();
 
         if (!isParticipant) {
             throw new ServerError("No tienes permisos para eliminar este chat.", 403);
         }
 
-        // Borrado LÓGICO y solo para quien lo pide: la conversación sigue
-        // intacta (con todos sus mensajes) para el otro participante.
+        // Borrado lógico: solo se oculta para quien lo borra, la conversación sigue
+        // intacta (con todos sus mensajes) para el otro participante, si sigue existiendo.
         await privateChatRepository.markDeletedByUserForChat(chat_id, user_id);
 
     }
