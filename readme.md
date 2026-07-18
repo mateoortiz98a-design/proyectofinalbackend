@@ -26,7 +26,7 @@ npm install
 
 3. Creá el archivo `.env` en la raíz:
 ```env
-MONGO_DB_CONNECTION_STRING=mongodb+srv://mateo:MANHAaD0lHJ8szAC@proyectofinalbackend.yoaqyv3.mongodb.net/?appName=proyectofinalbackend
+MONGO_DB_CONNECTION_STRING=??
 MONGO_DB_NAME=proyectofinalbackend
 JWT_SECRET=??
 PORT=8080
