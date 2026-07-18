@@ -141,9 +141,13 @@ class AuthController {
 
         const secret_key = ENVIRONMENT.JWT_SECRET + user.password;
         const token = jwt.sign({ email: user.email, id: user._id }, secret_key, { expiresIn: '15m' });
-        const reset_link = `${ENVIRONMENT.URL_FRONTEND}/reset-password?token=${token}`;
 
-        await mailService.sendResetPasswordEmail(user.email, reset_link)
+        //  antes se armaba acá el link completo (${URL_FRONTEND}/reset-password?token=${token})
+        // y se lo pasaba a sendResetPasswordEmail, que a su vez lo volvía a envolver en otra URL
+        // completa (porque esa función espera el token PELADO, no un link armado). Eso generaba
+        // el link duplicado que rompía el botón del mail. Ahora se le manda el token solo,
+        // igual que ya se hace correctamente con sendVerificationEmail en register().
+        await mailService.sendResetPasswordEmail(user.email, token)
 
         return response.status(200).json({
             ok: true,
@@ -159,12 +163,26 @@ class AuthController {
         const reset_token = auth_header.split(' ')[1]
         if (!reset_token) throw new ServerError('Falta el token de autorizacion', 401)
 
-        const { email } = jwt.decode(reset_token)
+        //  si el token viene roto/no es un JWT válido, jwt.decode() devuelve null
+        // en vez de tirar una excepción. Sin este chequeo, el "const { email } = null"
+        // de la línea de abajo explotaba con un TypeError y tiraba 500 en vez de un error prolijo.
+        const decoded = jwt.decode(reset_token)
+        if (!decoded || !decoded.email) throw new ServerError('Token de restablecimiento inválido', 401)
+
+        const { email } = decoded
         const user = await userRepository.getByEmail(email)
         if (!user) throw new ServerError("Usuario no encontrado", 404);
 
         const secret_key = ENVIRONMENT.JWT_SECRET + user.password;
-        jwt.verify(reset_token, secret_key);
+
+        //  jwt.verify() con un token vencido o con firma inválida TIRA una excepción
+        // (JsonWebTokenError / TokenExpiredError), así que también hay que envolverlo
+        // para que caiga como error controlado (401) y no como 500.
+        try {
+            jwt.verify(reset_token, secret_key);
+        } catch {
+            throw new ServerError('El link de restablecimiento es inválido o ya expiró', 401)
+        }
 
         const { newPassword } = request.body;
         if (!newPassword || newPassword.length < 6) throw new ServerError("Contraseña invalida", 400);
