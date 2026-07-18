@@ -26,15 +26,19 @@ npm install
 
 3. Creá el archivo `.env` en la raíz:
 ```env
-MONGO_DB_CONNECTION_STRING=mongodb://localhost:27017
-MONGO_DB_NAME=clase-11
-JWT_SECRET=tu_jwt_secret
+MONGO_DB_CONNECTION_STRING=mongodb+srv://mateo:MANHAaD0lHJ8szAC@proyectofinalbackend.yoaqyv3.mongodb.net/?appName=proyectofinalbackend
+MONGO_DB_NAME=proyectofinalbackend
+JWT_SECRET=??
 PORT=8080
-GMAIL_USERNAME=tu@gmail.com
-GMAIL_PASSWORD=tu_app_password
-URL_BACKEND=http://localhost:8080
-URL_FRONTEND=http://localhost:5173
-MODE=development
+GMAIL_USERNAME=??
+GMAIL_PASSWORD=??
+URL_BACKEND=https://proyectofinalbackend-production-2db3.up.railway.app
+URL_FRONTEND=https://proyectofinalfrontend-eight.vercel.app
+MODE=production
+MAILJET_API_KEY=??
+MAILJET_SECRET_KEY=??
+MAIL_FROM=??
+BREVO_API_KEY=??
 ```
 
 4. Iniciá el servidor:
